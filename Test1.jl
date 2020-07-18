@@ -2,8 +2,7 @@ using PH2514
 
 # Question 1
 # What is the Energy (in electron Volts - eV) associated with radiation at 13 micrometers? (Do not include units with your answer)
-eV(E_hf(f_cλ(Wavelength(13e-6))))
-
+eV(Wavelength(13e-6))
 
 # Question 2
 # Transitions to the n = 5 state of the hydrogen atom are known as the
@@ -20,7 +19,7 @@ E_Zn(1,5)-E_Zn(1,3)
 
 # Question 5
 # Calculate the wavelength for the peak of blackbody radiation at T = 5000 K. (Do not include units with your answer).
-WiensDisplacementLaw(5000)
+Wavelength(WiensDisplacementLaw(5000))
 
 # Question 6
 # Use the Stefan Boltzman Law to calculate the radiated power, in Watts, of a gray body at 97 K (boiling point of liquid nitrogen), emissitivity = 0.9 and surface area = 2 m2. (Do not enter units with your answer). Note the difference between a gray body and a blackbody is the emissivity.

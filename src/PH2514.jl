@@ -33,30 +33,42 @@ end
 struct Frequency <: Unit
     value::Number
 end
-promote_rule(::Type{Number}, ::Type{Unit})     = Unit
-promote_rule(::Type{Unit}, ::Type{Number})     = Unit
-promote_rule(::Type{Joule},::Type{ElectronVolt}) = Joule
-promote_rule(::Type{Number},::Type{Frequency})  = Frequency
-promote_rule(::Type{Frequency},::Type{Number})  = Frequency
-promote_rule(::Type{Number},::Type{Wavelength})  = Wavelength
-promote_rule(::Type{Wavelength},::Type{Number})  = Wavelength
+promote_rule(::Type{Number},    ::Type{Unit})           = Unit
+promote_rule(::Type{Unit},      ::Type{Number})         = Unit
+promote_rule(::Type{Joule},     ::Type{ElectronVolt})   = Joule
+promote_rule(::Type{Number},    ::Type{Frequency})      = Frequency
+promote_rule(::Type{Frequency}, ::Type{Number})         = Frequency
+promote_rule(::Type{Number},    ::Type{Wavelength})     = Wavelength
+promote_rule(::Type{Wavelength},::Type{Number})         = Wavelength
 
-ElectronVolt(J::Joule) = convert(ElectronVolt,J)
+ElectronVolt(J::Joule)  = convert(ElectronVolt,J)
+ElectronVolt(f::Frequency) = convert(ElectronVolt,f)
+ElectronVolt(λ::Wavelength) = convert(ElectronVolt,λ)
 Joule(eV::ElectronVolt) = convert(Joule,eV)
+Joule(f::Frequency) = convert(Joule,f)
+Joule(λ::Wavelength) = convert(Joule,λ)
 
+Wavelength(f::Frequency) = convert(Wavelength,f)
+Frequency(λ::Wavelength) = convert(Frequency,λ)
+Wavelength(e::Energy)    = convert(Wavelength,e)
+Frequency(e::Energy)     = convert(Frequency,e)
 
+Base.convert(::Type{ElectronVolt},  t::Joule)           = ElectronVolt(t.value * C[:J2eV])
+Base.convert(::Type{Joule},         t::ElectronVolt)    = Joule(t.value * C[:eV2J])
 
-Base.convert(::Type{ElectronVolt},  t::Joule)    = ElectronVolt(t.value * C[:J2eV])
-Base.convert(::Type{Joule},  t::ElectronVolt)    = Joule(t.value * C[:eV2J])
-Base.convert(::Type{Wavelength}, t::Frequency)  = Wavelength(C[:c] / t.value)
-Base.convert(::Type{Frequency}, t::Wavelength)  = Frequency(C[:c] / t.value)
-Base.convert(::Type{Frequency}, t::Energy)      = Frequency(convert(Joule,t).value / C[:h])
-Base.convert(::Type{Energy}, t::Frequency)      = Joule(t.value * C[:h] )
+Base.convert(::Type{Wavelength},    t::Frequency)       = Wavelength(C[:c] / t.value)
+Base.convert(::Type{Frequency},     t::Wavelength)      = Frequency(C[:c] / t.value)
 
-Base.convert(::Type{Number}, t::Unit)             = Number(t.value)
-Base.convert(::Type{Unit},t::Number)              = Unit(t)
-Base.convert(::Type{Wavelength},t::Number)        = Wavelength(t)
-Base.convert(::Type{Frequency},t::Number)        = Frequency(t)
+Base.convert(::Type{Frequency},     t::Energy)          = Frequency(convert(Joule,t).value / C[:h])
+Base.convert(::Type{Joule},         t::Frequency)       = Joule(C[:h] * t.value)
+Base.convert(::Type{ElectronVolt},  t::Frequency)       = ElectronVolt(convert(Joule,t))
+Base.convert(::Type{Joule},         t::Wavelength)      = convert(Joule,Frequency(t))
+Base.convert(::Type{ElectronVolt},  t::Wavelength)      = convert(ElectronVolt,Frequency(t))
+
+Base.convert(::Type{Number},        t::Unit)            = Number(t.value)
+Base.convert(::Type{Unit},          t::Number)          = Unit(t)
+Base.convert(::Type{Wavelength},    t::Number)          = Wavelength(t)
+Base.convert(::Type{Frequency},     t::Number)          = Frequency(t)
 
 Base. +(a::Joule,b::Joule) = Joule(a.value + b.value)
 Base. -(a::Joule,b::Joule) = Joule(a.value + b.value)
@@ -71,7 +83,7 @@ Base. -(a::Unit,b::Number) = -(promote(a,b)...)
 Base. +(a::Unit,b::Number) = +(promote(a,b)...)
 Base. *(a::Unit,b::Number) = *(promote(a,b)...)
 Base. ÷(a::Unit,b::Number) = ÷(promote(a,b)...)
-Base. *(a::Unit,b::Unit) = *(promote(a,b)...)
+Base. *(a::Unit,b::Unit)   = *(promote(a,b)...)
 
 
 function Base.show(io::IO, J::Joule)
@@ -94,13 +106,13 @@ end
 const J = Joule
 const eV = ElectronVolt
 
-λ_cf(f::Frequency) = convert(Wavelength,f::Frequency)
+λ_cf(f::Frequency) = Wavelength(f)
 
-f_cλ(λ::Wavelength) = convert(Frequency,λ::Wavelength)
+f_cλ(λ::Wavelength) = Frequency(λ)
 
-f_hE(E::Energy) = convert(Frequency,E)
+f_hE(E::Energy) = Frequency(E)
 
-E_hf(f::Frequency) = convert(Energy,f)
+E_hf(f::Frequency) = Joule(f)
 
 function E_Zn(Z,n)
     C[:E1] * (Z/n)^2
